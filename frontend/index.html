@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Dividend Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        header {
+            background-color: #0077b6;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #0077b6;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #005f8a;
+        }
+
+        .results {
+            margin-top: 2rem;
+        }
+
+        .dark-mode {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+
+        .dark-mode header {
+            background-color: #1e88e5;
+        }
+
+        .dark-mode button {
+            background-color: #1e88e5;
+        }
+
+        .dark-mode button:hover {
+            background-color: #1565c0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Stock Dividend Tracker</h1>
+        <p>Track your dividends and stay informed about your investments.</p>
+    </header>
+
+    <div class="container">
+        <div class="form-group">
+            <label for="stock-search">Search Stock (NSE/BSE):</label>
+            <input type="text" id="stock-search" placeholder="Enter stock ticker...">
+        </div>
+
+        <div class="form-group">
+            <label for="stock-symbol">Stock Symbol:</label>
+            <input type="text" id="stock-symbol" placeholder="e.g., TCS">
+        </div>
+
+        <div class="form-group">
+            <label for="quantity">Quantity Purchased:</label>
+            <input type="number" id="quantity" placeholder="e.g., 100">
+        </div>
+
+        <div class="form-group">
+            <label for="purchase-date">Purchase Date:</label>
+            <input type="date" id="purchase-date">
+        </div>
+
+        <button id="calculate-btn">Calculate Dividends</button>
+
+        <div class="results" id="results">
+            <!-- Results will be displayed here -->
+        </div>
+
+        <!-- Dividend Tracker Section -->
+        <div class="results" id="tracker-results">
+            <h3>Dividend Tracker</h3>
+            <table id="dividend-history" style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+                <thead>
+                    <tr>
+                        <th style="border: 1px solid #ccc; padding: 0.5rem;">Date</th>
+                        <th style="border: 1px solid #ccc; padding: 0.5rem;">Dividend Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Historical dividend data will be populated here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Dividend Forecast Section -->
+        <div class="results" id="forecast-results">
+            <h3>Dividend Forecast</h3>
+            <p>Predicted future dividends based on historical patterns:</p>
+            <canvas id="forecast-chart" style="width: 100%; height: 300px;"></canvas>
+        </div>
+
+        <button id="toggle-mode">Toggle Dark Mode</button>
+    </div>
+
+    <script>
+        // Fetch dividend data from the API and populate the table
+        async function fetchDividendData() {
+            const stockSymbol = document.getElementById('stock-symbol').value;
+
+            if (!stockSymbol) {
+                alert('Please enter a stock symbol to fetch dividend data.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/dividends?symbol=${stockSymbol}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch dividend data');
+                }
+
+                const data = await response.json();
+                const tableBody = document.querySelector('#dividend-history tbody');
+                tableBody.innerHTML = '';
+
+                data.forEach(dividend => {
+                    const row = document.createElement('tr');
+                    const dateCell = document.createElement('td');
+                    const amountCell = document.createElement('td');
+
+                    dateCell.textContent = dividend.date;
+                    amountCell.textContent = `₹${dividend.amount}`;
+
+                    dateCell.style.border = '1px solid #ccc';
+                    dateCell.style.padding = '0.5rem';
+                    amountCell.style.border = '1px solid #ccc';
+                    amountCell.style.padding = '0.5rem';
+
+                    row.appendChild(dateCell);
+                    row.appendChild(amountCell);
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error(error);
+                alert('An error occurred while fetching dividend data.');
+            }
+        }
+
+        // Add event listener to fetch and populate data when the button is clicked
+        const calculateButton = document.getElementById('calculate-btn');
+        calculateButton.addEventListener('click', fetchDividendData);
+
+        const toggleModeButton = document.getElementById('toggle-mode');
+        const body = document.body;
+
+        toggleModeButton.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+        });
+    </script>
+</body>
+</html>
